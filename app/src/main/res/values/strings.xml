@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Simple To Do</string>
+    <string name="title_activity_edit_task">EditTaskActivity</string>
 </resources>
