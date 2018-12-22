@@ -1,6 +1,8 @@
 package com.example.josephfletcher.simpletodo;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -21,6 +23,11 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity
 {
+    //numeric code to identify edit activity
+    public final static int EDIT_REQUEST_CODE = 20;
+    //keys used to pass data between activities
+    public final static String TASK_TEXT = "taskText";
+    public final static String TASK_POSITION = "taskPosition";
 
     ArrayList<String>tasks;
     ArrayAdapter<String>taskAdapter;
@@ -65,6 +72,41 @@ public class MainActivity extends AppCompatActivity
                 return true;
             }
         });
+        taskList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                //Create the new Activity
+                Intent intent = new Intent(MainActivity.this, EditTaskActivity.class);
+                //Pass data being edited
+                intent.putExtra(TASK_TEXT, tasks.get(position));
+                intent.putExtra(TASK_POSITION, position);
+                //Display Activity
+                MainActivity.this.startActivityForResult(intent, EDIT_REQUEST_CODE);
+            }
+        });
+    }
+
+    // Handle results from edit activity
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        //if edit activity completed ok
+        if (resultCode == RESULT_OK && requestCode == EDIT_REQUEST_CODE){
+            // extract updated item from result intent extras
+            String updatedTask = data.getExtras().getString(TASK_TEXT);
+            //extract original position of edited task
+            int position = data.getExtras().getInt(TASK_POSITION);
+            // update model with new task text at edited position
+            tasks.set(position, updatedTask);
+            // notify adapter that model changed
+            taskAdapter.notifyDataSetChanged();
+            // persist the changed model
+            writeTasks();
+            // notify user operation completed ok
+            Toast.makeText(this, "Task updated successfully", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private File getDataFile(){
